@@ -31,10 +31,19 @@ Se ha creado un conjunto de datos que contiene aproximadamente 3000 imágenes de
 - `index.html`: El archivo index.html es la página principal de la aplicación web. Proporciona un formulario donde se puede ingresar un vector latente y generar una imagen utilizando los modelos GAN.
 - `result.html`: El archivo result.html muestra el resultado de la generación de imágenes. Muestra la imagen generada a partir del vector latente proporcionado en la página anterior.
 
-## Instrucciones de Uso
+## Instrucciones de Uso - Modelos
 
 1. Clona este repositorio en tu máquina local: https://github.com/Robertuelo/TFM_GAN_CRACKS
 2. Configura tu entorno de desarrollo de acuerdo a las dependencias y requisitos mencionados en los notebooks.
 3. Explora los notebooks en el directorio `notebooks/` para entender cómo se han implementado y entrenado los modelos GAN.
 4. Utiliza el conjunto de datos en el directorio `dataset/` para entrenar tus propios modelos o generar nuevas imágenes de grietas en el asfalto.
-# TFM_GAN
+# TFM_GAN Intrucciones de uso - app
+1. Abre una terminal y cambia de directorio hasta donde hayas clonado el repositorio. 
+2. Genera una máquina virtual: python3 -m venv venv
+3. Lanza la máquina virtual: 
+	- Mac: source venv/bin/activate
+	- Windows: venv\Scripts\activate.bat
+4. Instala todas las dependencias: pip3 install -r requirements.txt
+5. Ejecuta la app: python3 app.py
+6. Copia la url generada y pégala en tu navegador.
+7. Escoge el número de imágenes a generar y ejecuta el modelo.

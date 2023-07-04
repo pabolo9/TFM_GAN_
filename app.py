@@ -8,6 +8,8 @@ import random
 import shutil
 import torch
 from torchvision.utils import save_image
+import torch.nn as nn
+import torchvision.utils as vutils
 
 app = Flask(__name__)
 
@@ -23,33 +25,60 @@ def index():
 @app.route('/generate', methods=['POST'])
 
 
-def generate_images():
+def generate_image():
+
     # Obtener el valor del vector de ruido del formulario
-    noise_value = float(request.form['noise'])
+    n_images = int(request.form['n_images'])
 
-    # Cargar los modelos y generar imágenes falsas
+    gan_model_dir = 'modelos/'
+    gan_model = 'DCGAN_gen_best_v3_2.pth'
     generated_images = []
-    gan_models_dir = 'modelos/'
-    gan_models = [
-        'infoGAN_generator_model_2_64x64.h5',
-        'DCGAN_generator_model_2_64x64.h5'#,
-        #'DCGAN_gen_best_v1.pth'
-    ]
-    for model_file in gan_models:
-        if '.h5' in model_file:
-            model_path = os.path.join(gan_models_dir, model_file)
-            generator = load_model(model_path)
 
-            # Generar una imagen falsa utilizando el modelo y el vector de ruido
-            noise = np.random.randn(1, 100) * noise_value
-            generated_img = generator.predict(noise)
-            generated_img = np.squeeze(generated_img, axis=0)
-            generated_img = (generated_img * 255).astype(np.uint8)
-            # Guardar la imagen generada en una lista
-            generated_images.append(Image.fromarray(generated_img))
-        else: #TODO: cargar y utilizar modelos .pth u otro formato
-            pass
-        
+    # Seteamos algunos hiperparametros que necesitaremos
+    nz = 100 #tamaño de input del generador
+    ngf = 128 #tamaño de input del generador
+    nc = 1 #numero de canales (1 porque trabajamos en escala de grises)
+
+    class gan_gen(nn.Module):
+
+        def __init__(self):
+            super(gan_gen, self).__init__()
+            self.main = nn.Sequential(
+                # La entrada será de tamaño nz, en este caso 100 y pasamos por una
+                # capa de convolución transpuesta con salida ngf*16=2048
+                nn.ConvTranspose2d(     nz, ngf * 16, 4, 1, 0, bias=False),
+                nn.BatchNorm2d(ngf * 16),
+                nn.ReLU(True),
+                # Pasamos por varias capas de convolucón transpuesta, reduciendo así
+                # el tamaño. ngf = 128
+                # (ngf*16) x 4 x 4
+                nn.ConvTranspose2d(ngf * 16, ngf * 8, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(ngf * 8),
+                nn.ReLU(True),
+                # (ngf*8) x 8 x 8
+                nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(ngf * 4),
+                nn.ReLU(True),
+                # (ngf*4) x 16 x 16
+                nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(ngf * 2),
+                nn.ReLU(True),
+                # (ngf*2) x 32 x 32
+                nn.ConvTranspose2d(ngf * 2,     ngf, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(ngf),
+                nn.ReLU(True),
+                # (ngf) x 64 x 64
+                nn.ConvTranspose2d(    ngf,      nc, 4, 2, 1, bias=False),
+                nn.Tanh()
+                # (nc) x 128 x 128
+                # La salida será 1x128x128
+            )
+
+
+        def forward(self, input):
+            output = self.main(input)
+            return output
+
 
     # Obtener una imagen aleatoria del directorio dataset_64x64
     dataset_dir = 'dataset_64x64/'
@@ -63,15 +92,31 @@ def generate_images():
     random_image_copy_path = os.path.join(download_dir, 'random_image.jpg')
     shutil.copy(random_image_path, random_image_copy_path)
 
+
+    # Construimos la url del generador
+    generator_path = os.path.join(gan_model_dir, gan_model)
+
+    # Cargamos los pesos del generador desde el archivo .pth
+    generator = gan_gen()
+    generator.load_state_dict(torch.load(generator_path, map_location=torch.device('cpu')))
+    generator.eval()
+
     # Guardar las imágenes generadas en el directorio de descarga
     generated_image_paths = []
-    for i, image in enumerate(generated_images):
-        generated_image_path = os.path.join(download_dir, f'generated_image_{i}.jpg')
-        image.save(generated_image_path)
+    for i in range(n_images):
+        # Generamos una imagen aleatoria
+        with torch.no_grad():
+            noise = torch.randn(1, 100, 1, 1)
+            imagen_generada = generator(noise)
+
+        generated_image_path = os.path.join(download_dir, f'generated_image_{i}.jpg')    
+        # Guardamos la imagen generada en un archivo .jpg
+        vutils.save_image(imagen_generada, generated_image_path, normalize=True)
         generated_image_paths.append(generated_image_path)
 
     return render_template('result.html', generated_images=generated_image_paths, random_image=random_image_copy_path)
-
+    
+    
 # Ruta para descargar las imágenes generadas
 @app.route('/download/<path:filename>')
 def download(filename):
