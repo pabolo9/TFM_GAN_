@@ -2,14 +2,49 @@
 <html>
 <head>
     <title>Generador de Imágenes</title>
+    <style>
+        body {
+            background-image: url('https://www.involucrasl.es/wp-content/uploads/2021/03/asfalto-en-caliente.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        form {
+            text-align: center;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background-color: blue;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <h1>Generador de Imágenes</h1>
+    <h1>Generador<br>de Imágenes</h1>
     <form action="/generate" method="POST">
         <label for="n_images">Número de imágenes a generar:</label>
         <input type="number" name="n_images" step="1" min="0" max="100" required>
+        <br>
         <button type="submit">Generar Imágenes</button>
     </form>
 </body>
 </html>
+
+
 

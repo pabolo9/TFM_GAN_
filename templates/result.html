@@ -2,18 +2,59 @@
 <html>
 <head>
     <title>Resultados</title>
+    <style>
+        body {
+            background-image: url('https://ghg-plumbing.com/wp-content/uploads/2018/04/PWMO_192_sostenible.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+       
+        h1 {
+            text-align: center;
+            color: white;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin-top: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.5rem;
+            text-align: center;
+            color: white;
+            border: 1px solid white;
+        }
+
+        .random-image {
+            display: block;
+            margin: 0 auto;
+            width: 15%;
+        }
+    </style>
 </head>
 <body>
     <h1>Resultados</h1>
     <h2>Imágenes Generadas: Modelo DCGAN</h2>
-    {% for i, image in enumerate(generated_images) %}
-        <h3>Imagen {{ i+1 }}</h3>
-        <img src="{{ url_for('download', filename=image) }}" alt="Generated Image">
-    {% endfor %}
+    <table>
+        <tr>
+            {% for i, image in enumerate(generated_images) %}
+                <td>
+                    <h3>Imagen {{ i+1 }}</h3>
+                    <img src="{{ url_for('download', filename=image) }}" alt="Generated Image">
+                </td>
+            {% endfor %}
+        </tr>
+    </table>
     <h2>Imagen Aleatoria del Dataset</h2>
-    <img src="{{ url_for('download', filename=random_image) }}" alt="Random Image from Dataset">
-    <p>Imagen Real del Dataset</p>
+    <img class="random-image" src="{{ url_for('download', filename=random_image) }}" alt="Random Image from Dataset">
+    <h2>Imagen Real del Dataset</h2>
 </body>
 </html>
-
-
